@@ -2,9 +2,9 @@ import os
 import datetime
 import hashlib
 from flask import Flask, session, url_for, redirect, render_template, request, abort, flash
-from database import list_users, verify, delete_user_from_db, add_user
-from database import read_note_from_db, write_note_into_db, delete_note_from_db, match_user_id_with_note_id
-from database import image_upload_record, list_images_for_user, match_user_id_with_image_uid, delete_image_from_db
+from api_client import list_users, verify, delete_user_from_db, add_user
+from api_client import read_note_from_db, write_note_into_db, delete_note_from_db, match_user_id_with_note_id
+from api_client import image_upload_record, list_images_for_user, match_user_id_with_image_uid, delete_image_from_db
 from werkzeug.utils import secure_filename
 
 
@@ -201,4 +201,5 @@ def FUN_add_user():
 
 
 if __name__ == "__main__":
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     app.run(debug=True, host="0.0.0.0")

@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-flask}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flask}
+      POSTGRES_DB: ${POSTGRES_DB:-flask}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-flask}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flask}
+      POSTGRES_DB: ${POSTGRES_DB:-flask}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      API_URL: http://api:5000
+      SECRET_KEY: ${SECRET_KEY:-fdsafasd}
+      UPLOAD_FOLDER: image_pool
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      - image_pool:/app/image_pool
+
+volumes:
+  postgres_data:
+  image_pool:

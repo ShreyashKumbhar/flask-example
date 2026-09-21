@@ -1,0 +1,6 @@
+.git
+__pycache__
+*.pyc
+database_file
+image_pool
+.env
